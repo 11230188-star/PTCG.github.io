@@ -1,4 +1,27 @@
 <!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>寶可夢卡牌展示</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+    }
+
+    header {
+      padding: 20px;
+      font-size: 2rem;
+      font-weight: bold;
+      background: rgba(0,0,0,0.3);
+    }
+
+    .container {
+      display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       padding: 20px;
@@ -48,39 +71,3 @@
 
 <div class="container" id="cardContainer">
   <div class="card" data-name="pikachu">
-    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png">
-    <h3>皮卡丘</h3>
-    <p>電屬性</p>
-  </div>
-
-  <div class="card" data-name="charizard">
-    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png">
-    <h3>噴火龍</h3>
-    <p>火 / 飛行</p>
-  </div>
-
-  <div class="card" data-name="bulbasaur">
-    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png">
-    <h3>妙蛙種子</h3>
-    <p>草 / 毒</p>
-  </div>
-</div>
-
-<script>
-function searchCard() {
-  const input = document.getElementById('search').value.toLowerCase();
-  const cards = document.querySelectorAll('.card');
-
-  cards.forEach(card => {
-    const name = card.getAttribute('data-name');
-    if (name.includes(input)) {
-      card.style.display = 'block';
-    } else {
-      card.style.display = 'none';
-    }
-  });
-}
-</script>
-
-</body>
-</html>

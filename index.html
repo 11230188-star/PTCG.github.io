@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>寶可夢卡牌展示</title>
+  <title>寶可夢卡牌展示 (API版)</title>
   <style>
     body {
       margin: 0;
@@ -18,6 +18,17 @@
       font-size: 2rem;
       font-weight: bold;
       background: rgba(0,0,0,0.3);
+    }
+
+    .search-box {
+      margin: 20px;
+    }
+
+    input {
+      padding: 10px;
+      width: 250px;
+      border-radius: 10px;
+      border: none;
     }
 
     .container {
@@ -41,33 +52,43 @@
     }
 
     .card img {
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    .card h3 {
-      margin: 10px 0 5px;
-    }
-
-    .search-box {
-      margin: 20px;
-    }
-
-    input {
-      padding: 10px;
-      width: 200px;
-      border-radius: 10px;
-      border: none;
+      width: 120px;
     }
   </style>
 </head>
 <body>
 
-<header>⚡ 寶可夢卡牌展示網站</header>
+<header>⚡ 寶可夢卡牌展示 (API)</header>
 
 <div class="search-box">
-  <input type="text" id="search" placeholder="搜尋寶可夢..." onkeyup="searchCard()">
+  <input type="text" id="search" placeholder="輸入寶可夢名稱 (英文)...">
+  <button onclick="searchPokemon()">搜尋</button>
 </div>
 
-<div class="container" id="cardContainer">
-  <div class="card" data-name="pikachu">
+<div class="container" id="cardContainer"></div>
+
+<script>
+const container = document.getElementById('cardContainer');
+
+// 預設載入
+window.onload = () => {
+  loadPokemons(1, 12);
+};
+
+async function loadPokemons(start, count) {
+  container.innerHTML = '';
+  for (let i = start; i < start + count; i++) {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
+    const data = await res.json();
+    createCard(data);
+  }
+}
+
+function createCard(pokemon) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const types = pokemon.types.map(t => t.type.name).join(' / ');
+
+  card.innerHTML = `
+

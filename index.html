@@ -1,120 +1,95 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>寶可夢卡牌展示 (API版)</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #1e3c72, #2a5298);
-      color: white;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<title>PTCG 準備介面</title>
+<style>
+body {
+    font-family: Arial;
+    background: #2c3e50;
+    color: white;
+    text-align: center;
+}
 
-    header {
-      padding: 20px;
-      font-size: 2rem;
-      font-weight: bold;
-      background: rgba(0,0,0,0.3);
-    }
+.area {
+    border: 2px solid #fff;
+    padding: 10px;
+    margin: 10px;
+}
 
-    .search-box {
-      margin: 20px;
-    }
+.hand, .field {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
 
-    input {
-      padding: 10px;
-      width: 250px;
-      border-radius: 10px;
-      border: none;
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      color: black;
-      border-radius: 15px;
-      padding: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: transform 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-
-    .card img {
-      width: 120px;
-    }
-  </style>
+.card {
+    width: 80px;
+    height: 120px;
+    background: #ecf0f1;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+}
+</style>
 </head>
+
 <body>
 
+<h1>PTCG 準備畫面</h1>
 
-<header>⚡ 寶可夢卡牌展示 (API)</header>
-
-<div class="search-box">
-  <input type="text" id="search" placeholder="輸入寶可夢名稱 (英文)...">
-  <button onclick="searchPokemon()">搜尋</button>
+<div class="area">
+    <h2>手牌</h2>
+    <div class="hand" id="hand"></div>
 </div>
 
-<div class="container" id="cardContainer"></div>
+<div class="area">
+    <h2>場上寶可夢</h2>
+    <div class="field" id="field"></div>
+</div>
+
+<button onclick="drawCard()">抽牌</button>
 
 <script>
-const container = document.getElementById('cardContainer');
+let deck = ["皮卡丘", "小火龍", "傑尼龜", "妙蛙種子", "能量卡", "訓練家"];
+let hand = [];
 
+function drawCard() {
+    if (deck.length === 0) return;
 
-window.onload = () => {
-  loadPokemons(1, 12);
-};
-
-async function loadPokemons(start, count) {
-  container.innerHTML = '';
-  for (let i = start; i < start + count; i++) {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
-    const data = await res.json();
-    createCard(data);
-  }
+    let card = deck.pop();
+    hand.push(card);
+    renderHand();
 }
 
-function createCard(pokemon) {
-  const card = document.createElement('div');
-  card.className = 'card';
+function renderHand() {
+    let handDiv = document.getElementById("hand");
+    handDiv.innerHTML = "";
 
-  const types = pokemon.types.map(t => t.type.name).join(' / ');
+    hand.forEach((card, index) => {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerText = card;
 
-  card.innerHTML = `
-    <img src="${pokemon.sprites.front_default}">
-    <h3>${pokemon.name}</h3>
-    <p>${types}</p>
-  `;
+        div.onclick = () => playCard(index);
 
-  container.appendChild(card);
+        handDiv.appendChild(div);
+    });
 }
 
-async function searchPokemon() {
-  const input = document.getElementById('search').value.toLowerCase();
-  if (!input) return;
+function playCard(index) {
+    let card = hand.splice(index, 1)[0];
+    let field = document.getElementById("field");
 
-  container.innerHTML = '載入中...';
+    let div = document.createElement("div");
+    div.className = "card";
+    div.innerText = card;
 
-  try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${input}`);
-    const data = await res.json();
-
-    container.innerHTML = '';
-    createCard(data);
-  } catch (err) {
-    container.innerHTML = '找不到這隻寶可夢 😢';
-  }
+    field.appendChild(div);
+    renderHand();
 }
 </script>
 

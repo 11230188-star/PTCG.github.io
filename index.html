@@ -58,6 +58,7 @@
 </head>
 <body>
 
+
 <header>⚡ 寶可夢卡牌展示 (API)</header>
 
 <div class="search-box">
@@ -70,7 +71,7 @@
 <script>
 const container = document.getElementById('cardContainer');
 
-  
+
 window.onload = () => {
   loadPokemons(1, 12);
 };
@@ -91,4 +92,31 @@ function createCard(pokemon) {
   const types = pokemon.types.map(t => t.type.name).join(' / ');
 
   card.innerHTML = `
+    <img src="${pokemon.sprites.front_default}">
+    <h3>${pokemon.name}</h3>
+    <p>${types}</p>
+  `;
 
+  container.appendChild(card);
+}
+
+async function searchPokemon() {
+  const input = document.getElementById('search').value.toLowerCase();
+  if (!input) return;
+
+  container.innerHTML = '載入中...';
+
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${input}`);
+    const data = await res.json();
+
+    container.innerHTML = '';
+    createCard(data);
+  } catch (err) {
+    container.innerHTML = '找不到這隻寶可夢 😢';
+  }
+}
+</script>
+
+</body>
+</html>

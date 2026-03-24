@@ -1,13 +1,22 @@
-start-area.goPage {
-  display: block;
-  margin: 30px auto;
-  width: 200px;
-  text-align: center;
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+.start-area .goPage {  
+  display: block;  
+  margin: 30px auto;  
+  width: 200px;  
+  text-align: center;  
+  background-color: #4CAF50;  
+  color: white;  
+  padding: 12px;  
+  border: none;  
+  border-radius: 8px;  
+  font-size: 16px;  
+  cursor: pointer;  
+
+  /* 加上過渡動畫 */
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+/* 滑鼠移上去放大 + 改色 */
+.start-area .goPage:hover {
+  transform: scale(1.1);       /* 放大 10% */
+  background-color: #45a049;   /* 顏色變深 */
 }

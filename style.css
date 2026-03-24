@@ -1,4 +1,13 @@
-.start-area .goPage {
+start-area.goPage {
   display: block;
   margin: 30px auto;
+  width: 200px;
+  text-align: center;
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
 }

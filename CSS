@@ -1,0 +1,6 @@
+.goPage {
+  display: block;
+  margin: 30px auto;   /* 置中 */
+  width: 200px;        /* 固定寬度 */
+  text-align: center;
+}

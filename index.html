@@ -43,10 +43,11 @@
     </section>
     
    
-  <!-- 按鈕 -->
-    <button onclick="goPage()">試試看</button>
+ <!-- 按鈕 -->
+<button class="goPage" onclick="goPage()">試試看</button>
+
 <style>
-.goPage() {
+.goPage {
   background-color: #4CAF50;
   color: white;
   padding: 10px 20px;
@@ -56,18 +57,16 @@
   cursor: pointer;
 }
 
-.goPage():hover {
+.goPage:hover {
   background-color: #45a049;
 }
 </style>
+
 <script>
 function goPage() {
   window.location.href = "main.html";
 }
 </script>
-
-
-
  
 </body>
 </html>

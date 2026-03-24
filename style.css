@@ -1,3 +1,4 @@
-index.html:hover .goPage {
-  transform: scale(1.1);
+.start-area .goPage {
+  display: block;
+  margin: 30px auto;
 }

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>寶可夢卡牌新手教學</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>🎴 寶可夢卡牌新手教學</h1>
+    <p>從0開始學會玩 Pokémon TCG！</p>
+</header>
+
+<nav>
+    <button onclick="showSection('intro')">介紹</button>
+    <button onclick="showSection('cards')">卡牌種類</button>
+    <button onclick="showSection('rules')">基本規則</button>
+</nav>
+
+<main>
+    <!-- 介紹 -->
+    <section id="intro" class="active">
+        <h2>什麼是寶可夢卡牌？</h2>
+        <p>
+            寶可夢卡牌（Pokémon TCG）是一款策略卡牌遊戲，
+            玩家透過寶可夢進行對戰，利用技能擊敗對手！
+        </p>
+    </section>
+
+    <!-- 卡牌種類 -->
+    <section id="cards">
+        <h2>卡牌種類</h2>
+        <ul>
+            <li>🟡 寶可夢卡：用來戰鬥</li>
+            <li>🔵 能量卡：提供技能所需能量</li>
+            <li>🟣 訓練家卡：輔助效果</li>
+        </ul>
+    </section>
+
+    <!-- 規則 -->
+    <section id="rules">
+        <h2>基本規則</h2>
+        <ol>
+            <li>每人牌組60張</li>
+            <li>抽7張起手牌</li>
+            <li>放置1隻寶可夢開始</li>
+            <li>擊敗對手6隻寶可夢即勝利</li>
+        </ol>
+    </section>
+</main>
+
+<footer>
+    <p>© 2026 Pokémon Card Beginner Guide</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

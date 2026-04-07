@@ -1,17 +1,230 @@
-<section>
-  <h2>4. 開局流程</h2>
-  <ol>
-    <li>洗牌</li>
-    <li>抽 7 張手牌</li>
-    <li>
-      放置基礎寶可夢：
-      <ul>
-        <li>1 隻在戰鬥區（Active）</li>
-        <li>若沒有基礎寶可夢 → 對手檢查並重新抽卡</li>
-        <li>對手多抽 1 張手牌</li>
-      </ul>
-    </li>
-    <li>最多放 5 隻在備戰區（Bench）</li>
-    <li>放 6 張獎賞卡（面朝下）</li>
-  </ol>
-</section>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<title>寶可夢卡牌開局教學</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+  }
+
+  h1 { margin-top: 10px; }
+
+  .board {
+    display: grid;
+    grid-template-areas:
+      "opponent"
+      "active"
+      "bench"
+      "hand";
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .zone {
+    border: 2px dashed #555;
+    padding: 10px;
+    border-radius: 10px;
+    min-height: 100px;
+  }
+
+  .active { grid-area: active; }
+  .bench { grid-area: bench; display: flex; justify-content: center; gap: 10px;}
+  .hand { grid-area: hand; display: flex; justify-content: center; gap: 10px;}
+  .deck { margin: 10px auto; width: 80px; height: 110px; background: #333; border-radius: 8px;}
+
+  .card {
+    width: 70px;
+    height: 100px;
+    background: white;
+    color: black;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+
+  .card:hover {
+    transform: scale(1.1);
+  }
+
+  .highlight {
+    border-color: yellow;
+  }
+
+  button {
+    margin: 10px;
+    padding: 8px 16px;
+    font-size: 16px;
+  }
+
+  .reward {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .back {
+    background: #444;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎮 開局教學</h1>
+
+<div class="deck" id="deck">牌庫</div>
+
+<button onclick="shuffle()">洗牌</button>
+<button onclick="drawCards()">抽 7 張</button>
+<button onclick="nextStep()">下一步</button>
+
+<div id="message">點擊「洗牌」開始</div>
+
+<div class="board">
+
+  <div class="zone active" id="active">Active</div>
+
+  <div class="zone bench" id="bench">Bench</div>
+
+  <div class="zone hand" id="hand">Hand</div>
+
+  <div class="reward" id="reward"></div>
+
+</div>
+
+<script>
+let step = 0;
+let deck = [];
+let hand = [];
+
+function createDeck() {
+  deck = [];
+  for (let i = 0; i < 20; i++) {
+    deck.push({
+      name: "基礎",
+      basic: true
+    });
+  }
+  for (let i = 0; i < 20; i++) {
+    deck.push({
+      name: "進化",
+      basic: false
+    });
+  }
+}
+
+function shuffle() {
+  createDeck();
+  deck.sort(() => Math.random() - 0.5);
+  document.getElementById("message").innerText = "洗牌完成！抽牌吧";
+  step = 1;
+}
+
+function drawCards() {
+  if (step !== 1) return;
+  hand = deck.splice(0, 7);
+  renderHand();
+  document.getElementById("message").innerText = "拖曳一張「基礎」到 Active";
+  step = 2;
+}
+
+function renderHand() {
+  const handDiv = document.getElementById("hand");
+  handDiv.innerHTML = "";
+  hand.forEach((card, index) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = card.name;
+    div.draggable = true;
+
+    div.ondragstart = (e) => {
+      e.dataTransfer.setData("index", index);
+    };
+
+    handDiv.appendChild(div);
+  });
+}
+
+const active = document.getElementById("active");
+active.ondragover = (e) => e.preventDefault();
+active.ondrop = (e) => {
+  if (step !== 2) return;
+
+  const index = e.dataTransfer.getData("index");
+  const card = hand[index];
+
+  if (!card.basic) {
+    alert("只能放基礎寶可夢！");
+    return;
+  }
+
+  active.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerText = card.name;
+  active.appendChild(div);
+
+  hand.splice(index, 1);
+  renderHand();
+
+  document.getElementById("message").innerText = "可放置 Bench（最多 5 張）";
+  step = 3;
+};
+
+const bench = document.getElementById("bench");
+bench.ondragover = (e) => e.preventDefault();
+bench.ondrop = (e) => {
+  if (step !== 3) return;
+
+  if (bench.children.length >= 5) {
+    alert("最多 5 隻！");
+    return;
+  }
+
+  const index = e.dataTransfer.getData("index");
+  const card = hand[index];
+
+  if (!card.basic) {
+    alert("只能放基礎寶可夢！");
+    return;
+  }
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerText = card.name;
+
+  bench.appendChild(div);
+
+  hand.splice(index, 1);
+  renderHand();
+};
+
+function nextStep() {
+  if (step === 3) {
+    setupReward();
+    document.getElementById("message").innerText = "完成開局！";
+    step = 4;
+  }
+}
+
+function setupReward() {
+  const reward = document.getElementById("reward");
+  reward.innerHTML = "";
+
+  for (let i = 0; i < 6; i++) {
+    const div = document.createElement("div");
+    div.className = "card back";
+    reward.appendChild(div);
+  }
+}
+</script>
+
+</body>
+</html>

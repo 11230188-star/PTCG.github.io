@@ -3,100 +3,116 @@
 <head>
 <meta charset="UTF-8" />
 <title>寶可夢卡牌開局教學</title>
+
 <style>
-  body {
-    font-family: sans-serif;
-    background: #0f172a;
-    color: white;
-    text-align: center;
-  }
+body {
+  font-family: sans-serif;
+  background: radial-gradient(circle, #0f172a, #020617);
+  color: white;
+  text-align: center;
+}
 
-  h1 { margin-top: 10px; }
+/* ✨ 提示文字 */
+#message {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 15px;
+  text-shadow: 0 0 10px #60a5fa, 0 0 20px #22d3ee;
+}
 
-  .board {
-    display: grid;
-    grid-template-areas:
-      "opponent"
-      "active"
-      "bench"
-      "hand";
-    gap: 10px;
-    padding: 10px;
-  }
+/* ✨ 動畫 */
+.pop {
+  animation: pop 0.4s ease;
+}
 
-  .zone {
-    border: 2px dashed #555;
-    padding: 10px;
-    border-radius: 10px;
-    min-height: 100px;
-  }
+@keyframes pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
 
-  .active { grid-area: active; }
-  .bench { grid-area: bench; display: flex; justify-content: center; gap: 10px;}
-  .hand { grid-area: hand; display: flex; justify-content: center; gap: 10px;}
-  .deck { margin: 10px auto; width: 80px; height: 110px; background: #333; border-radius: 8px;}
+/* 版面 */
+.board {
+  display: grid;
+  grid-template-areas:
+    "active"
+    "bench"
+    "hand";
+  gap: 12px;
+  padding: 10px;
+}
 
-  .card {
-    width: 70px;
-    height: 100px;
-    background: white;
-    color: black;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    font-size: 12px;
-    transition: transform 0.2s;
-  }
+.zone {
+  border: 2px dashed #475569;
+  border-radius: 12px;
+  min-height: 110px;
+  padding: 10px;
+  transition: 0.3s;
+}
 
-  .card:hover {
-    transform: scale(1.1);
-  }
+.active { grid-area: active; }
+.bench { grid-area: bench; display: flex; justify-content: center; gap: 10px; }
+.hand { grid-area: hand; display: flex; justify-content: center; gap: 10px; }
 
-  .highlight {
-    border-color: yellow;
-  }
+/* ✨ 高亮引導 */
+.highlight {
+  border-color: #22c55e;
+  box-shadow: 0 0 15px #22c55e;
+}
 
-  button {
-    margin: 10px;
-    padding: 8px 16px;
-    font-size: 16px;
-  }
+/* 卡片 */
+.card {
+  width: 70px;
+  height: 100px;
+  background: white;
+  color: black;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: 0.2s;
+}
 
-  .reward {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-  }
+.card:hover {
+  transform: scale(1.15);
+}
 
-  .back {
-    background: #444;
-  }
+/* 牌庫 */
+.deck {
+  margin: 10px auto;
+  width: 80px;
+  height: 110px;
+  background: linear-gradient(#1e293b, #020617);
+  border-radius: 10px;
+}
+
+/* 獎賞卡 */
+.reward {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.back {
+  background: #334155;
+}
 </style>
 </head>
+
 <body>
 
-<h1>🎮 開局教學</h1>
+<h1>🎮 開局互動教學</h1>
 
-<div class="deck" id="deck">牌庫</div>
+<div class="deck" onclick="shuffle()">牌庫（點擊洗牌）</div>
 
-<button onclick="shuffle()">洗牌</button>
-<button onclick="drawCards()">抽 7 張</button>
-<button onclick="nextStep()">下一步</button>
-
-<div id="message">點擊「洗牌」開始</div>
+<div id="message"></div>
 
 <div class="board">
-
   <div class="zone active" id="active">Active</div>
-
   <div class="zone bench" id="bench">Bench</div>
-
   <div class="zone hand" id="hand">Hand</div>
-
   <div class="reward" id="reward"></div>
-
 </div>
 
 <script>
@@ -104,40 +120,53 @@ let step = 0;
 let deck = [];
 let hand = [];
 
-function createDeck() {
-  deck = [];
-  for (let i = 0; i < 20; i++) {
-    deck.push({
-      name: "基礎",
-      basic: true
-    });
-  }
-  for (let i = 0; i < 20; i++) {
-    deck.push({
-      name: "進化",
-      basic: false
-    });
-  }
+/* 🎯 打字機效果 */
+function typeMessage(text) {
+  const msg = document.getElementById("message");
+  msg.innerText = "";
+  msg.classList.remove("pop");
+
+  let i = 0;
+  const interval = setInterval(() => {
+    msg.innerText += text[i];
+    i++;
+    if (i >= text.length) {
+      clearInterval(interval);
+      msg.classList.add("pop");
+    }
+  }, 30);
 }
 
+/* 🎯 建立牌庫 */
+function createDeck() {
+  deck = [];
+  for (let i = 0; i < 15; i++) deck.push({ name: "基礎", basic: true });
+  for (let i = 0; i < 15; i++) deck.push({ name: "進化", basic: false });
+}
+
+/* 🎯 洗牌 */
 function shuffle() {
   createDeck();
   deck.sort(() => Math.random() - 0.5);
-  document.getElementById("message").innerText = "洗牌完成！抽牌吧";
-  step = 1;
+  typeMessage("洗牌完成！抽 7 張手牌");
+  drawCards();
 }
 
+/* 🎯 抽牌 */
 function drawCards() {
-  if (step !== 1) return;
   hand = deck.splice(0, 7);
   renderHand();
-  document.getElementById("message").innerText = "拖曳一張「基礎」到 Active";
-  step = 2;
+  step = 1;
+
+  highlight("active");
+  typeMessage("拖曳一張「基礎寶可夢」到 Active");
 }
 
+/* 🎯 顯示手牌 */
 function renderHand() {
   const handDiv = document.getElementById("hand");
   handDiv.innerHTML = "";
+
   hand.forEach((card, index) => {
     const div = document.createElement("div");
     div.className = "card";
@@ -152,39 +181,45 @@ function renderHand() {
   });
 }
 
+/* 🎯 高亮 */
+function highlight(zoneId) {
+  document.querySelectorAll(".zone").forEach(z => z.classList.remove("highlight"));
+  document.getElementById(zoneId).classList.add("highlight");
+}
+
+/* 🎯 Active 放置 */
 const active = document.getElementById("active");
-active.ondragover = (e) => e.preventDefault();
-active.ondrop = (e) => {
-  if (step !== 2) return;
+active.ondragover = e => e.preventDefault();
+
+active.ondrop = e => {
+  if (step !== 1) return;
 
   const index = e.dataTransfer.getData("index");
   const card = hand[index];
 
   if (!card.basic) {
-    alert("只能放基礎寶可夢！");
+    typeMessage("❗只能放基礎寶可夢！");
     return;
   }
 
-  active.innerHTML = "";
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerText = card.name;
-  active.appendChild(div);
-
+  active.innerHTML = `<div class="card">${card.name}</div>`;
   hand.splice(index, 1);
   renderHand();
 
-  document.getElementById("message").innerText = "可放置 Bench（最多 5 張）";
-  step = 3;
+  step = 2;
+  highlight("bench");
+  typeMessage("放置最多 5 隻到 Bench（可跳過）");
 };
 
+/* 🎯 Bench */
 const bench = document.getElementById("bench");
-bench.ondragover = (e) => e.preventDefault();
-bench.ondrop = (e) => {
-  if (step !== 3) return;
+bench.ondragover = e => e.preventDefault();
+
+bench.ondrop = e => {
+  if (step !== 2) return;
 
   if (bench.children.length >= 5) {
-    alert("最多 5 隻！");
+    typeMessage("❗最多 5 隻！");
     return;
   }
 
@@ -192,28 +227,30 @@ bench.ondrop = (e) => {
   const card = hand[index];
 
   if (!card.basic) {
-    alert("只能放基礎寶可夢！");
+    typeMessage("❗只能放基礎寶可夢！");
     return;
   }
 
   const div = document.createElement("div");
   div.className = "card";
   div.innerText = card.name;
-
   bench.appendChild(div);
 
   hand.splice(index, 1);
   renderHand();
 };
 
-function nextStep() {
-  if (step === 3) {
+/* 🎯 點擊畫面進入下一步 */
+document.body.onclick = () => {
+  if (step === 2) {
     setupReward();
-    document.getElementById("message").innerText = "完成開局！";
-    step = 4;
+    highlight("");
+    typeMessage("🎉 開局完成！");
+    step = 3;
   }
-}
+};
 
+/* 🎯 獎賞卡 */
 function setupReward() {
   const reward = document.getElementById("reward");
   reward.innerHTML = "";
@@ -223,6 +260,11 @@ function setupReward() {
     div.className = "card back";
     reward.appendChild(div);
   }
+}
+</script>
+
+</body>
+</html>
 }
 </script>
 

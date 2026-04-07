@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
-<title>寶可夢卡牌開局教學</title>
+<title>寶可夢卡牌完整版</title>
 
 <style>
 body {
@@ -12,157 +12,153 @@ body {
   text-align: center;
 }
 
-/* ✨ 提示文字 */
+h1 { margin: 10px; }
+
 #message {
-  font-size: 32px;
-  font-weight: bold;
-  margin: 15px;
-  text-shadow: 0 0 10px #60a5fa, 0 0 20px #22d3ee;
-}
-
-/* ✨ 動畫 */
-.pop {
-  animation: pop 0.4s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.7); opacity: 0; }
-  60% { transform: scale(1.2); }
-  100% { transform: scale(1); opacity: 1; }
+  font-size: 20px;
+  margin: 10px;
+  color: #38bdf8;
 }
 
 /* 版面 */
 .board {
   display: grid;
   grid-template-areas:
+    "enemy"
     "active"
     "bench"
-    "hand";
-  gap: 12px;
+    "hand"
+    "controls";
+  gap: 10px;
   padding: 10px;
 }
 
 .zone {
   border: 2px dashed #475569;
-  border-radius: 12px;
-  min-height: 110px;
+  border-radius: 10px;
   padding: 10px;
-  transition: 0.3s;
+  min-height: 90px;
 }
 
+.enemy { grid-area: enemy; }
 .active { grid-area: active; }
-.bench { grid-area: bench; display: flex; justify-content: center; gap: 10px; }
-.hand { grid-area: hand; display: flex; justify-content: center; gap: 10px; }
-
-/* ✨ 高亮引導 */
-.highlight {
-  border-color: #22c55e;
-  box-shadow: 0 0 15px #22c55e;
-}
+.bench { grid-area: bench; display: flex; justify-content: center; gap: 8px; }
+.hand { grid-area: hand; display: flex; justify-content: center; gap: 8px; }
+.controls { grid-area: controls; }
 
 /* 卡片 */
 .card {
-  width: 70px;
-  height: 100px;
+  width: 80px;
+  height: 110px;
   background: white;
   color: black;
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 5px;
   cursor: grab;
-  transition: 0.2s;
-}
-
-.card:hover {
-  transform: scale(1.15);
-}
-
-/* 牌庫 */
-.deck {
-  margin: 10px auto;
-  width: 80px;
-  height: 110px;
-  background: linear-gradient(#1e293b, #020617);
-  border-radius: 10px;
-}
-
-/* 獎賞卡 */
-.reward {
   display: flex;
-  justify-content: center;
-  gap: 6px;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.back {
-  background: #334155;
+.hp {
+  font-size: 12px;
+  color: red;
+}
+
+/* 按鈕 */
+button {
+  margin: 5px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #16a34a;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎮 開局互動教學</h1>
-
-<div class="deck" onclick="shuffle()">牌庫（點擊洗牌）</div>
-
+<h1>🎮 寶可夢卡牌（完整版）</h1>
 <div id="message"></div>
 
 <div class="board">
-  <div class="zone active" id="active">Active</div>
-  <div class="zone bench" id="bench">Bench</div>
-  <div class="zone hand" id="hand">Hand</div>
-  <div class="reward" id="reward"></div>
+
+  <div class="zone enemy" id="enemy">敵方 Active</div>
+
+  <div class="zone active" id="active">你的 Active</div>
+
+  <div class="zone bench" id="bench">Bench（最多5）</div>
+
+  <div class="zone hand" id="hand"></div>
+
+  <div class="controls">
+    <button onclick="endTurn()">結束回合</button>
+    <button onclick="resetGame()">重新開始</button>
+  </div>
+
 </div>
 
 <script>
-let step = 0;
 let deck = [];
 let hand = [];
+let playerActive = null;
+let enemyActive = null;
 
-/* 🎯 打字機效果 */
-function typeMessage(text) {
-  const msg = document.getElementById("message");
-  msg.innerText = "";
-  msg.classList.remove("pop");
-
-  let i = 0;
-  const interval = setInterval(() => {
-    msg.innerText += text[i];
-    i++;
-    if (i >= text.length) {
-      clearInterval(interval);
-      msg.classList.add("pop");
-    }
-  }, 30);
-}
-
-/* 🎯 建立牌庫 */
+/* 建立牌庫 */
 function createDeck() {
+  const base = [
+    { name: "皮卡丘", hp: 60, atk: 20 },
+    { name: "小火龍", hp: 70, atk: 25 },
+    { name: "傑尼龜", hp: 70, atk: 20 },
+    { name: "妙蛙種子", hp: 80, atk: 15 }
+  ];
+
   deck = [];
-  for (let i = 0; i < 15; i++) deck.push({ name: "基礎", basic: true });
-  for (let i = 0; i < 15; i++) deck.push({ name: "進化", basic: false });
+  for (let i = 0; i < 5; i++) {
+    base.forEach(p => deck.push({...p}));
+  }
 }
 
-/* 🎯 洗牌 */
-function shuffle() {
+/* 洗牌 */
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+/* 抽牌 */
+function draw(n) {
+  return deck.splice(0, n);
+}
+
+/* 開始遊戲 */
+function startGame() {
   createDeck();
-  deck.sort(() => Math.random() - 0.5);
-  typeMessage("洗牌完成！抽 7 張手牌");
-  drawCards();
+  shuffle(deck);
+
+  hand = draw(5);
+  enemyActive = draw(1)[0];
+  playerActive = null;
+
+  renderAll();
+  setMessage("👉 拖一張寶可夢到 Active");
 }
 
-/* 🎯 抽牌 */
-function drawCards() {
-  hand = deck.splice(0, 7);
+/* 渲染全部 */
+function renderAll() {
   renderHand();
-  step = 1;
-
-  highlight("active");
-  typeMessage("拖曳一張「基礎寶可夢」到 Active");
+  renderActive();
+  renderEnemy();
 }
 
-/* 🎯 顯示手牌 */
+/* 手牌 */
 function renderHand() {
   const handDiv = document.getElementById("hand");
   handDiv.innerHTML = "";
@@ -170,10 +166,13 @@ function renderHand() {
   hand.forEach((card, index) => {
     const div = document.createElement("div");
     div.className = "card";
-    div.innerText = card.name;
-    div.draggable = true;
+    div.innerHTML = `
+      <div>${card.name}</div>
+      <div class="hp">HP:${card.hp}</div>
+    `;
 
-    div.ondragstart = (e) => {
+    div.draggable = true;
+    div.ondragstart = e => {
       e.dataTransfer.setData("index", index);
     };
 
@@ -181,91 +180,104 @@ function renderHand() {
   });
 }
 
-/* 🎯 高亮 */
-function highlight(zoneId) {
-  document.querySelectorAll(".zone").forEach(z => z.classList.remove("highlight"));
-  document.getElementById(zoneId).classList.add("highlight");
-}
+/* 玩家 Active */
+const activeZone = document.getElementById("active");
 
-/* 🎯 Active 放置 */
-const active = document.getElementById("active");
-active.ondragover = e => e.preventDefault();
+activeZone.ondragover = e => e.preventDefault();
 
-active.ondrop = e => {
-  if (step !== 1) return;
+activeZone.ondrop = e => {
+  if (playerActive) return;
 
   const index = e.dataTransfer.getData("index");
-  const card = hand[index];
-
-  if (!card.basic) {
-    typeMessage("❗只能放基礎寶可夢！");
-    return;
-  }
-
-  active.innerHTML = `<div class="card">${card.name}</div>`;
+  playerActive = hand[index];
   hand.splice(index, 1);
-  renderHand();
 
-  step = 2;
-  highlight("bench");
-  typeMessage("放置最多 5 隻到 Bench（可跳過）");
+  renderAll();
+  setMessage("👉 點擊攻擊或結束回合");
 };
 
-/* 🎯 Bench */
-const bench = document.getElementById("bench");
-bench.ondragover = e => e.preventDefault();
+/* 顯示 Active */
+function renderActive() {
+  const zone = document.getElementById("active");
 
-bench.ondrop = e => {
-  if (step !== 2) return;
-
-  if (bench.children.length >= 5) {
-    typeMessage("❗最多 5 隻！");
+  if (!playerActive) {
+    zone.innerHTML = "你的 Active（拖卡到這）";
     return;
   }
 
-  const index = e.dataTransfer.getData("index");
-  const card = hand[index];
+  zone.innerHTML = `
+    <div>${playerActive.name}</div>
+    <div class="hp">HP:${playerActive.hp}</div>
+    <button onclick="attack()">攻擊</button>
+  `;
+}
 
-  if (!card.basic) {
-    typeMessage("❗只能放基礎寶可夢！");
+/* 敵人 */
+function renderEnemy() {
+  const zone = document.getElementById("enemy");
+
+  if (!enemyActive) {
+    zone.innerHTML = "🎉 敵人被擊敗！";
     return;
   }
 
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerText = card.name;
-  bench.appendChild(div);
-
-  hand.splice(index, 1);
-  renderHand();
-};
-
-/* 🎯 點擊畫面進入下一步 */
-document.body.onclick = () => {
-  if (step === 2) {
-    setupReward();
-    highlight("");
-    typeMessage("🎉 開局完成！");
-    step = 3;
-  }
-};
-
-/* 🎯 獎賞卡 */
-function setupReward() {
-  const reward = document.getElementById("reward");
-  reward.innerHTML = "";
-
-  for (let i = 0; i < 6; i++) {
-    const div = document.createElement("div");
-    div.className = "card back";
-    reward.appendChild(div);
-  }
+  zone.innerHTML = `
+    <div>${enemyActive.name}</div>
+    <div class="hp">HP:${enemyActive.hp}</div>
+  `;
 }
-</script>
 
-</body>
-</html>
+/* 攻擊 */
+function attack() {
+  if (!playerActive || !enemyActive) return;
+
+  enemyActive.hp -= playerActive.atk;
+  setMessage(`💥 造成 ${playerActive.atk} 傷害`);
+
+  if (enemyActive.hp <= 0) {
+    enemyActive = null;
+    renderEnemy();
+    setMessage("🎉 你贏了！");
+    return;
+  }
+
+  renderEnemy();
 }
+
+/* 敵人回合 */
+function enemyTurn() {
+  if (!enemyActive || !playerActive) return;
+
+  playerActive.hp -= enemyActive.atk;
+  setMessage(`😈 敵人攻擊 ${enemyActive.atk}`);
+
+  if (playerActive.hp <= 0) {
+    playerActive = null;
+    document.getElementById("active").innerHTML = "💀 你的寶可夢倒下";
+    setMessage("💀 你輸了！");
+    return;
+  }
+
+  renderActive();
+}
+
+/* 結束回合 */
+function endTurn() {
+  enemyTurn();
+}
+
+/* 重開 */
+function resetGame() {
+  startGame();
+}
+
+/* 訊息 */
+function setMessage(msg) {
+  document.getElementById("message").innerText = msg;
+}
+
+/* 啟動 */
+startGame();
 </script>
 
 </body>

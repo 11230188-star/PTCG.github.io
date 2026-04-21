@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>PTCG Ultimate Reborn</title>
+    <title>PTCG Ultimate - Interaction Pro</title>
     <style>
         :root {
             --ptcg-blue: #1b3664;
@@ -20,80 +20,97 @@
 
         /* --- 3D 舞台 --- */
         .arena { perspective: 1500px; width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1a2a1a 0%, #000 100%); }
-        .board-3d { width: 1100px; height: 600px; transform: rotateX(20deg); transform-style: preserve-3d; display: grid; grid-template-columns: 200px 1fr 200px; gap: 20px; transition: transform 0.3s; }
+        .board-3d { width: 1150px; height: 650px; transform: rotateX(20deg); transform-style: preserve-3d; display: grid; grid-template-columns: 200px 1fr 200px; gap: 30px; }
         
-        /* --- 物理洗牌動畫 --- */
+        /* --- 物理洗牌 --- */
         @keyframes riffle-l { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-100px,-20px) rotate(-15deg)} }
         @keyframes riffle-r { 0%,100%{transform:translate(0,0)} 50%{transform:translate(100px,20px) rotate(15deg)} }
         .shf-l { animation: riffle-l 0.4s infinite !important; }
         .shf-r { animation: riffle-r 0.4s infinite !important; }
 
-        /* --- 填能流光動畫 --- */
+        /* --- 填能流光 --- */
         @keyframes energy-fly {
             0% { transform: scale(1); opacity: 1; filter: blur(0px); }
             100% { transform: translate(var(--tx), var(--ty)) scale(2); opacity: 0; filter: blur(5px); }
         }
-        .energy-particle {
-            position: fixed; width: 20px; height: 20px; background: var(--energy-color);
-            border-radius: 50%; box-shadow: 0 0 20px var(--energy-color);
-            z-index: 2000; pointer-events: none;
+        .energy-particle { position: fixed; width: 22px; height: 22px; background: var(--energy-color); border-radius: 50%; box-shadow: 0 0 25px var(--energy-color); z-index: 2000; pointer-events: none; }
+
+        /* --- 擴張感應區域 (核心優化) --- */
+        .slot { 
+            border: 2.5px solid rgba(255,255,255,0.08); border-radius: 14px; 
+            background: rgba(255,255,255,0.015); display: flex; align-items: center; 
+            justify-content: center; position: relative; transition: 0.25s; 
+            box-sizing: border-box;
+        }
+        
+        /* 增加 Active 區的視覺引導與感應範圍 */
+        .slot.active-vibe { 
+            width: 170px; height: 230px; /* 加大視覺格子 */
+            border-color: rgba(0, 210, 255, 0.3); 
+            box-shadow: 0 0 40px rgba(0,210,255,0.05);
+        }
+        
+        /* 備戰區加大間距與寬度 */
+        .bench-container { display: flex; gap: 15px; height: 140px; margin-top: 10px; }
+        .bench-slot { width: 100px; height: 135px; }
+
+        .slot.hover { 
+            border-color: var(--ptcg-gold); 
+            background: rgba(255,203,5,0.15); 
+            transform: scale(1.05); /* 拖過時輕微放大提示 */
         }
 
-        /* --- 進化與攻擊特效 --- */
-        @keyframes evolve-glow { 0%, 100% { box-shadow: 0 0 0px #fff; } 50% { box-shadow: 0 0 30px var(--ptcg-gold); } }
+        /* --- 特效 --- */
+        @keyframes evolve-glow { 0%, 100% { box-shadow: 0 0 0px #fff; } 50% { box-shadow: 0 0 40px var(--ptcg-gold); } }
         .evolve-anim { animation: evolve-glow 0.8s ease-out; }
-        @keyframes shake-anim { 0%, 100% { transform: rotateX(20deg) translate(0,0); } 25% { transform: rotateX(20deg) translate(8px, 8px); } 75% { transform: rotateX(20deg) translate(-8px, -8px); } }
+        @keyframes shake-anim { 0%, 100% { transform: rotateX(20deg) translate(0,0); } 25% { transform: rotateX(20deg) translate(10px, 10px); } 75% { transform: rotateX(20deg) translate(-10px, -10px); } }
         .shake { animation: shake-anim 0.3s ease-in-out; }
 
         /* --- 卡牌基礎 --- */
-        .card-entity { width: var(--card-w); height: var(--card-h); cursor: grab; border-radius: 8px; border: 2.5px solid white; background-size: cover; position: relative; transition: 0.3s; }
+        .card-entity { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid white; background-size: cover; position: relative; transition: 0.3s; z-index: 5; }
         .pokemon-back { width: 100%; height: 100%; background: var(--ptcg-blue); border: 2px solid #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px #000; }
-        .pokemon-back::after { content: ""; width: 40px; height: 40px; border: 2px solid var(--ptcg-gold); border-radius: 50%; opacity: 0.2; }
-
-        /* --- 區域 --- */
-        .slot { border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; position: relative; transition: 0.3s; }
-        .slot.active-vibe { border-color: var(--live-blue); box-shadow: 0 0 25px rgba(0,210,255,0.1); }
-        .slot.hover { border-color: var(--ptcg-gold); background: rgba(255,203,5,0.1); }
-
+        
         /* --- UI --- */
         .hand { position: fixed; bottom: -10px; width: 100%; height: 160px; display: flex; justify-content: center; align-items: flex-end; z-index: 1000; }
-        .hand-card { margin-left: -40px; transform-origin: bottom center; }
-        .hand-card:hover { transform: translateY(-80px) scale(1.4) rotate(0deg) !important; z-index: 1100; }
+        .hand-card { margin-left: -40px; transform-origin: bottom center; cursor: grab; }
+        .hand-card:hover { transform: translateY(-90px) scale(1.5) rotate(0deg) !important; z-index: 1100; cursor: pointer; }
 
-        .battle-log { position: fixed; left: 20px; bottom: 20px; width: 220px; height: 150px; background: rgba(0,0,0,0.7); border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 11px; color: #ccc; overflow-y: auto; pointer-events: none; }
-        .side-menu { position: fixed; right: 20px; bottom: 180px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { background: #222; color: white; border: 1px solid #555; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn:hover { border-color: var(--live-blue); transform: translateX(-5px); }
+        .battle-log { position: fixed; left: 25px; bottom: 25px; width: 240px; height: 160px; background: rgba(0,0,0,0.75); border: 1px solid #333; border-radius: 10px; padding: 12px; font-size: 12px; color: #eee; overflow-y: auto; pointer-events: none; border-left: 4px solid var(--live-blue); }
+        .side-menu { position: fixed; right: 25px; bottom: 180px; display: flex; flex-direction: column; gap: 12px; }
+        .btn { background: #1a1a1a; color: white; border: 1.5px solid #444; padding: 14px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn:hover { border-color: var(--live-blue); background: #222; transform: scale(1.05); }
 
-        .energy-count { position: absolute; top: -12px; right: -12px; width: 28px; height: 28px; background: radial-gradient(circle, #ff4ed2, #8e2de2); border: 2.5px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .energy-count { position: absolute; top: -14px; right: -14px; width: 32px; height: 32px; background: radial-gradient(circle, #ff4ed2, #8e2de2); border: 2.5px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
 <div class="arena">
     <div id="board" class="board-3d">
-        <div id="prize-zone" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;"></div>
+        <div id="prize-zone" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px;"></div>
 
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:space-between;">
-            <div id="opp-active" class="slot active-vibe" style="width:140px; height:190px;"></div>
+            <div id="opp-active" class="slot active-vibe" style="border-color:rgba(255,255,255,0.1);"></div>
             
-            <div id="p-active" class="slot active-vibe" style="width:140px; height:190px;" 
-                 ondragover="over(event)" ondrop="handleDrop(event, 'active')"></div>
+            <div id="p-active" class="slot active-vibe" 
+                 ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'active')">
+                 <span style="position:absolute; bottom:15px; font-size:12px; opacity:0.3; font-weight:bold;">ACTIVE SPOT</span>
+            </div>
             
-            <div id="bench" style="display:flex; gap:10px; height:115px;">
-                <div class="slot" style="width:82px;" ondragover="over(event)" ondrop="handleDrop(event, 'bench', 0)"></div>
-                <div class="slot" style="width:82px;" ondragover="over(event)" ondrop="handleDrop(event, 'bench', 1)"></div>
-                <div class="slot" style="width:82px;" ondragover="over(event)" ondrop="handleDrop(event, 'bench', 2)"></div>
-                <div class="slot" style="width:82px;" ondragover="over(event)" ondrop="handleDrop(event, 'bench', 3)"></div>
-                <div class="slot" style="width:82px;" ondragover="over(event)" ondrop="handleDrop(event, 'bench', 4)"></div>
+            <div id="bench" class="bench-container">
+                <div class="slot bench-slot" ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'bench', 0)"></div>
+                <div class="slot bench-slot" ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'bench', 1)"></div>
+                <div class="slot bench-slot" ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'bench', 2)"></div>
+                <div class="slot bench-slot" ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'bench', 3)"></div>
+                <div class="slot bench-slot" ondragover="over(event)" ondragleave="leave(event)" ondrop="handleDrop(event, 'bench', 4)"></div>
             </div>
         </div>
 
-        <div style="display:flex; flex-direction:column; justify-content:flex-end; gap:20px; padding:20px;">
-            <div class="slot" style="height:140px; opacity:0.3;">DISCARD</div>
-            <div id="deck-area" style="position:relative; height:150px; cursor:pointer;" onclick="drawCard()">
+        <div style="display:flex; flex-direction:column; justify-content:flex-end; gap:25px; padding:20px;">
+            <div class="slot" style="height:150px; opacity:0.2;">DISCARD</div>
+            <div id="deck-area" style="position:relative; height:160px; cursor:pointer;" onclick="drawCard()">
                 <div id="deck-visual-stack"></div>
-                <div style="text-align:center; color:var(--ptcg-gold); margin-top:10px; font-weight:bold; font-size:12px;">DECK: <span id="deck-count">60</span></div>
+                <div style="text-align:center; color:var(--ptcg-gold); margin-top:10px; font-weight:bold; font-size:13px;">DECK: <span id="deck-count">60</span></div>
             </div>
         </div>
     </div>
@@ -102,9 +119,9 @@
 <div class="battle-log" id="log"></div>
 
 <div class="side-menu">
-    <button class="btn" style="background:#444;" onclick="shuffleDeck()">🌀 SHUFFLE</button>
+    <button class="btn" style="background:#333;" onclick="shuffleDeck()">🌀 SHUFFLE</button>
     <button id="energy-btn" class="btn" style="color:var(--energy-color)" onclick="attachEnergyAnimation()">🔋 ATTACH ENERGY</button>
-    <button class="btn" style="background:#b00; border:none;" onclick="attack()">⚔️ ATTACK</button>
+    <button class="btn" style="background:linear-gradient(to bottom, #d00, #800); border:none;" onclick="attack()">⚔️ ATTACK</button>
 </div>
 
 <div id="hand" class="hand"></div>
@@ -124,13 +141,13 @@
         renderPrizes(); updateDeckUI();
         for(let i=0; i<7; i++) state.hand.push(state.deck.shift());
         renderHand(); renderBoard();
-        addLog("Battle Started.");
+        addLog("Game setup complete. Battle on!");
     }
 
     function shuffleDeck() {
         const cards = document.querySelectorAll('.d-stack-card');
         cards.forEach((c, i) => c.classList.add(i % 2 === 0 ? 'shf-l' : 'shf-r'));
-        addLog("Shuffling...");
+        addLog("Shuffling your deck...");
         setTimeout(() => {
             state.deck.sort(() => Math.random() - 0.5);
             cards.forEach(c => c.classList.remove('shf-l', 'shf-r'));
@@ -143,12 +160,12 @@
         if(state.deck.length > 0) {
             state.hand.push(state.deck.shift());
             renderHand(); updateDeckUI();
-            addLog("Drew 1 card.");
+            addLog("Drew a card.");
         }
     }
 
     function attachEnergyAnimation() {
-        if(!state.active) return addLog("No Pokémon to charge!");
+        if(!state.active) return addLog("No Active Pokémon to energy up!");
         const btn = document.getElementById('energy-btn');
         const activeSlot = document.getElementById('p-active');
         const bRect = btn.getBoundingClientRect();
@@ -159,8 +176,8 @@
         particle.style.left = bRect.left + "px";
         particle.style.top = bRect.top + "px";
         
-        particle.style.setProperty('--tx', (aRect.left - bRect.left + 60) + "px");
-        particle.style.setProperty('--ty', (aRect.top - bRect.top + 80) + "px");
+        particle.style.setProperty('--tx', (aRect.left - bRect.left + 75) + "px");
+        particle.style.setProperty('--ty', (aRect.top - bRect.top + 100) + "px");
         particle.style.animation = "energy-fly 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
         
         document.body.appendChild(particle);
@@ -168,7 +185,7 @@
             particle.remove();
             state.active.energy++;
             renderBoard();
-            addLog("Energy +1");
+            addLog("Energy attached.");
         }, 600);
     }
 
@@ -179,7 +196,7 @@
         let current = (target === 'active') ? state.active : state.bench[bIdx];
 
         if (current && newCard.stage > current.stage) {
-            addLog(`Evolved: ${newCard.name}`);
+            addLog(`Evolution! ${current.name} evolved into ${newCard.name}`);
             const evolved = { ...newCard, energy: current.energy, currentHp: newCard.hp };
             if(target === 'active') state.active = evolved; else state.bench[bIdx] = evolved;
             e.currentTarget.classList.add('evolve-anim');
@@ -187,38 +204,39 @@
         } else {
             const cardObj = { ...newCard, currentHp: newCard.hp, energy: 0 };
             if(target === 'active') state.active = cardObj; else state.bench[bIdx] = cardObj;
-            addLog(`Played ${newCard.name}`);
+            addLog(`Played ${newCard.name} to ${target}.`);
         }
         state.hand.splice(idx, 1);
         renderHand(); renderBoard();
     }
 
     function attack() {
-        if(!state.active || state.active.energy < 2) return addLog("Not enough energy!");
+        if(!state.active || state.active.energy < 2) return addLog("Need 2 Energy to attack!");
         document.getElementById('board').classList.add('shake');
         state.oppHp -= 200;
-        addLog("Phantom Dive! 200 DMG");
+        addLog("Phantom Dive! Dealt 200 damage.");
         setTimeout(() => {
             document.getElementById('board').classList.remove('shake');
             if(state.oppHp <= 0) {
                 state.oppHp = 320; state.prizes--;
-                renderPrizes(); addLog("K.O.! Prize taken.");
+                renderPrizes(); addLog("Knock Out! Prize taken.");
             }
             renderBoard();
         }, 300);
     }
 
     function renderBoard() {
-        document.getElementById('p-active').innerHTML = state.active ? createCard(state.active) : "";
+        document.getElementById('p-active').innerHTML = state.active ? createCard(state.active, true) : `<span style="opacity:0.2">ACTIVE</span>`;
         const slots = document.querySelectorAll('#bench .slot');
-        state.bench.forEach((c, i) => slots[i].innerHTML = c ? createCard(c) : "");
-        document.getElementById('opp-active').innerHTML = createCard({img: CARD_DATA[0].img, energy: 2, currentHp: state.oppHp, hp: 320});
+        state.bench.forEach((c, i) => slots[i].innerHTML = c ? createCard(c, false) : "");
+        document.getElementById('opp-active').innerHTML = createCard({img: CARD_DATA[0].img, energy: 2, currentHp: state.oppHp, hp: 320}, true);
     }
 
-    function createCard(c) {
-        return `<div class="card-entity" style="background-image:url(${c.img}); width:100%; height:100%;">
+    function createCard(c, isActive) {
+        const size = isActive ? "width:115px; height:160px;" : "width:100%; height:100%;";
+        return `<div class="card-entity" style="background-image:url(${c.img}); ${size}">
             <div class="energy-count">${c.energy || 0}</div>
-            <div style="position:absolute; bottom:-12px; width:100%; text-align:center; font-size:11px; background:rgba(0,0,0,0.8);">HP: ${c.currentHp || c.hp}</div>
+            <div style="position:absolute; bottom:-12px; width:100%; text-align:center; font-size:12px; background:rgba(0,0,0,0.85); font-weight:bold;">HP: ${c.currentHp || c.hp}</div>
         </div>`;
     }
 
@@ -243,11 +261,12 @@
 
     function renderPrizes() {
         const z = document.getElementById('prize-zone'); z.innerHTML = "";
-        for(let i=0; i<state.prizes; i++) z.innerHTML += `<div class="slot" style="height:85px;"><div class="pokemon-back"></div></div>`;
+        for(let i=0; i<state.prizes; i++) z.innerHTML += `<div class="slot" style="height:85px; width:65px;"><div class="pokemon-back"></div></div>`;
     }
 
     function addLog(m) { const l = document.getElementById('log'); l.innerHTML += `<div>> ${m}</div>`; l.scrollTop = l.scrollHeight; }
     function over(e) { e.preventDefault(); e.currentTarget.classList.add('hover'); }
+    function leave(e) { e.currentTarget.classList.remove('hover'); }
 
     init();
 </script>
